@@ -9,7 +9,12 @@ import joblib
 import numpy as np
 import pandas as pd
 from PIL import Image
-from skimage.feature import hog
+
+try:
+    from skimage.feature import hog
+except ImportError:
+    hog = None
+
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
@@ -99,7 +104,13 @@ def extract_image_features(image_input):
 
     # Grayscale for HOG texture
     gray = np.mean(arr, axis=2) / 255.0
-    h_feats = hog(gray, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1))
+    if hog is not None:
+        try:
+            h_feats = hog(gray, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1))
+        except Exception:
+            h_feats = np.resize(gray, 512)
+    else:
+        h_feats = np.resize(gray, 512)
 
     # Color histograms (8 bins per channel = 24 bins)
     r_hist, _ = np.histogram(arr[:, :, 0], bins=8, range=(0, 256), density=True)
