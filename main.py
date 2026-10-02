@@ -17,7 +17,8 @@ from model_utils import (
     DISEASE_MODEL_PATH,
     DISEASE_ENCODER_PATH,
     extract_image_features,
-    get_remedy
+    get_remedy,
+    get_or_load_all_models
 )
 from ap_locations import (
     get_all_ap_mandis,
@@ -32,9 +33,6 @@ app = FastAPI(
     version="2.1"
 )
 
-MODEL_PATH = "models/cauliflower_size_model.pkl"
-ENCODER_PATH = "models/size_encoder.pkl"
-
 # Global model references
 model = None
 encoder = None
@@ -46,21 +44,14 @@ disease_encoder = None
 
 def load_models():
     global model, encoder, quality_model, quality_encoder, price_model, disease_model, disease_encoder
-
-    if os.path.exists(SIZE_MODEL_PATH) and os.path.exists(SIZE_ENCODER_PATH):
-        model = joblib.load(SIZE_MODEL_PATH)
-        encoder = joblib.load(SIZE_ENCODER_PATH)
-
-    if os.path.exists(QUALITY_MODEL_PATH) and os.path.exists(QUALITY_ENCODER_PATH):
-        quality_model = joblib.load(QUALITY_MODEL_PATH)
-        quality_encoder = joblib.load(QUALITY_ENCODER_PATH)
-
-    if os.path.exists(PRICE_MODEL_PATH):
-        price_model = joblib.load(PRICE_MODEL_PATH)
-
-    if os.path.exists(DISEASE_MODEL_PATH) and os.path.exists(DISEASE_ENCODER_PATH):
-        disease_model = joblib.load(DISEASE_MODEL_PATH)
-        disease_encoder = joblib.load(DISEASE_ENCODER_PATH)
+    loaded = get_or_load_all_models()
+    model = loaded.get("size_model")
+    encoder = loaded.get("size_encoder")
+    quality_model = loaded.get("quality_model")
+    quality_encoder = loaded.get("quality_encoder")
+    price_model = loaded.get("price_model")
+    disease_model = loaded.get("disease_model")
+    disease_encoder = loaded.get("disease_encoder")
 
 load_models()
 
